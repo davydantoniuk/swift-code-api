@@ -44,3 +44,25 @@ def test_create_and_delete_swift_code():
     # Verify deletion
     response = client.get("/v1/swift-codes/TESTBANKXXX")
     assert response.status_code == 404
+
+def test_get_by_country():
+    # Add a sample record
+    payload = {
+        "swift_code": "FOOBANKXXX",
+        "bank_name": "Foo Bank",
+        "address": "Foo Street 1",
+        "country_name": "Fooland",
+        "country_code": "FO",
+        "is_headquarter": True
+    }
+    client.post("/v1/swift-codes", json=payload)
+
+    # Test GET by country
+    response = client.get("/v1/swift-codes/country/FO")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["countryISO2"] == "FO"
+    assert any(code["swift_code"] == "FOOBANKXXX" for code in data["swiftCodes"])
+
+    # Clean up
+    client.delete("/v1/swift-codes/FOOBANKXXX")
